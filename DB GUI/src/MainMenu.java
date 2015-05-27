@@ -5,8 +5,6 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -52,11 +50,6 @@ public class MainMenu {
 	Logger log = Logger.getLogger("Error Log");
 	FileHandler fh;
 	static String current = System.getProperty("user.dir");
-	
-	//static String filename = (current + "\\Current.txt");
-	
-	static File file = new File("resources/config.properties");
-	static String ap = file.getAbsolutePath();
 
 	/**
 	 * Launch the application.
@@ -97,17 +90,17 @@ public class MainMenu {
 		 * Load the properties of the program
 		 */
 		Properties prop = new Properties();
-		//Thread ct = Thread.currentThread();
-		//ClassLoader contextLoader = ct.getContextClassLoader();
-		InputStream is = getClass().getResourceAsStream("config.properties");
+		Thread ct = Thread.currentThread();
+		ClassLoader contextLoader = ct.getContextClassLoader();
+		InputStream is = contextLoader.getResourceAsStream("config.properties");
 		prop.load(is);
 		
 		//Get Database URL from properties file
 		String url = prop.getProperty("url").toString();
 		
 		//Ask for user input, and verify that it is correct
-		String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);		
-		String pass = JOptionPane.showInputDialog("Input Password");
+		String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);
+		String pass = JOptionPane.showInputDialog(frame, "Input Password", url, JOptionPane.QUESTION_MESSAGE);
 		
 		/**
 		 * Establishes the Log file
@@ -124,7 +117,7 @@ public class MainMenu {
 
 		String label = "Test";
 
-		con = DriverManager.getConnection(url, "jeff", "1234");
+		con = DriverManager.getConnection(url, user, pass);
 		
 		if (con !=null) {
 			log.info("Connected");
