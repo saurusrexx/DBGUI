@@ -153,13 +153,15 @@ public class Settings extends JDialog {
 								
 								Properties props = new Properties();
 			
-								FileOutputStream out = new FileOutputStream("config.properties");
+								FileOutputStream out = new FileOutputStream("resources/config.properties");
 								props.load(is);
 								props.setProperty("url", c);
 								props.store(out, null);
 								out.close();
 									
-								System.out.println(currentUrl);
+								//System.out.println(currentUrl);
+								
+								System.exit(0);
 							}
 
 							
@@ -175,6 +177,14 @@ public class Settings extends JDialog {
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
+				cancelButton.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseReleased(MouseEvent arg0) {
+						
+						System.exit(0);
+						
+					}
+				});
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);
 			}
