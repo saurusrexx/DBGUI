@@ -106,8 +106,8 @@ public class MainMenu {
 		String url = prop.getProperty("url").toString();
 		
 		//Ask for user input, and verify that it is correct
-		//String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);		
-		//String pass = JOptionPane.showInputDialog("Input Password");
+		String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);		
+		String pass = JOptionPane.showInputDialog("Input Password");
 		
 		/**
 		 * Establishes the Log file
@@ -249,20 +249,6 @@ public class MainMenu {
 				}
 			}
 		});
-		
-		JButton btnNewButton_2 = new JButton("New button");
-		btnNewButton_2.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent arg0) {
-				
-				
-			}
-		});
-		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
-		gbc_btnNewButton_2.insets = new Insets(0, 0, 0, 5);
-		gbc_btnNewButton_2.gridx = 2;
-		gbc_btnNewButton_2.gridy = 2;
-		frame.getContentPane().add(btnNewButton_2, gbc_btnNewButton_2);
 		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
 		gbc_btnNewButton_1.gridx = 3;
 		gbc_btnNewButton_1.gridy = 2;
@@ -296,6 +282,7 @@ public class MainMenu {
 			}
 		});
 		mnNewMenu.add(mntmSettings);
+		
 		
 	}
 	

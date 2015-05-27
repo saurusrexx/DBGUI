@@ -36,18 +36,6 @@ public class Settings extends JDialog {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
-		Properties prop = new Properties();
-		Thread ct = Thread.currentThread();
-		ClassLoader contextLoader = ct.getContextClassLoader();
-		InputStream is = contextLoader.getResourceAsStream("config.properties");
-		try {
-			prop.load(is);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		//System.out.println(prop.getProperty("user"));
 	
 	}
 
@@ -131,33 +119,31 @@ public class Settings extends JDialog {
 				JButton okButton = new JButton("OK");
 				okButton.addMouseListener(new MouseAdapter() {
 					
-					
 					@Override
 					public void mouseReleased(MouseEvent arg0) {
 						try {
-							//Thread ct = Thread.currentThread();
-							//ClassLoader contextLoader = ct.getContextClassLoader();
-							//InputStream is = contextLoader.getResourceAsStream("/config.properties");
-							//Properties prop = new Properties();
-							//prop.load(is);
-							//is.close();
 							
-							String s = prop.getProperty("user").toString();
 							String c = urlField.getText().toString();
 							
-							System.out.println(c + "nothing found");
+							if (urlField.getText().contentEquals("")) {
+								System.out.println("Nothing Entered");			//Change to JOptionPane alert message
+							} 
+							else {
+								System.out.println(c);							//Change to JOptionPane alert message
+							}
 							
-							prop.setProperty("url", c);
-							
-							FileInputStream in = new FileInputStream("config.properties");
 							Properties props = new Properties();
-							props.load(in);
-							in.close();
+							//props.load(in);
+							
+							//in.close();
 
 							FileOutputStream out = new FileOutputStream("config.properties");
-							props.setProperty("country", "america");
+							props.load(is);
+							props.setProperty("url", c);
 							props.store(out, null);
 							out.close();
+							
+							System.out.println(currentUrl);
 							
 						} catch (Exception e){
 							
@@ -177,7 +163,7 @@ public class Settings extends JDialog {
 			
 		}
 		//System.out.println();
-		System.out.println(currentUrl);
+		//System.out.println(currentUrl);
 		
 	}
 
