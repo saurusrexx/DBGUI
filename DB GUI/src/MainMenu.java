@@ -5,6 +5,8 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -29,7 +31,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -51,6 +52,8 @@ public class MainMenu {
 	static ResultSet rs1 = null;
 	
 	public String t;
+	
+	String orderBy = "";
 
 	//Log File Setup
 	Logger log = Logger.getLogger("Error Log");
@@ -59,6 +62,7 @@ public class MainMenu {
 
 	/**
 	 * Launch the application.
+	 * @return 
 	 * @throws Exception 
 	 */
 	public static void main(String[] args) throws Exception {
@@ -72,7 +76,6 @@ public class MainMenu {
 				}
 			}
 		});
-		
 	}
 
 	/**
@@ -89,21 +92,35 @@ public class MainMenu {
 	 * @throws Exception 
 	 */
 	private void initialize() throws Exception {
-
 		//Initialize driver
 		Class.forName("org.postgresql.Driver");
 		
 		/** 
-		 * Load the properties of the program
+		 * Load the URL Properties of the program
 		 */
 		Properties prop = new Properties();
-		Thread ct = Thread.currentThread();
-		ClassLoader contextLoader = ct.getContextClassLoader();
-		InputStream is = contextLoader.getResourceAsStream("config.properties");
+		Thread urlCt = Thread.currentThread();
+		ClassLoader ucontextLoader = urlCt.getContextClassLoader();
+		InputStream is = ucontextLoader.getResourceAsStream("config.properties");
 		prop.load(is);
 		
 		//Get Database URL from properties file
 		String url = prop.getProperty("url").toString();
+		
+		/**
+		 * Load the Sort By Properties of the program
+		 */
+		Properties propSort = new Properties();
+		//Thread sortCt = Thread.currentThread();
+		//ClassLoader scontextloader = sortCt.getContextClassLoader();
+		InputStream sIs = getClass().getResourceAsStream("/sortconfig.properties");
+		try {
+			propSort.load(sIs);
+		} catch (Exception e) {
+			
+		}
+		
+		String sort = propSort.getProperty("sort").toString();
 		
 		//Ask for user input, and verify that it is correct
 		//String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);
@@ -139,7 +156,8 @@ public class MainMenu {
 			log.info("Network Error: No Connection");
 		}
 		
-		st = con.prepareStatement("SELECT * FROM test.inspection_room_inventory ORDER BY idnumber ASC");
+		//st = con.prepareStatement("SELECT * FROM test.inspection_room_inventory ORDER BY idnumber ASC");
+		st = con.prepareStatement("SELECT * FROM test.inspection_room_inventory ORDER BY " + sort + " ASC");
 		rs = st.executeQuery();
 
 		frame = new JFrame();
@@ -154,8 +172,9 @@ public class MainMenu {
 		
 		JLabel lblNewLabel = new JLabel(label);
 		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.gridwidth = 4;
 		gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewLabel.gridx = 2;
+		gbc_lblNewLabel.gridx = 0;
 		gbc_lblNewLabel.gridy = 0;
 		frame.getContentPane().add(lblNewLabel, gbc_lblNewLabel);
 		
@@ -256,6 +275,27 @@ public class MainMenu {
 			}
 		});
 		
+		JButton btnNewButton_2 = new JButton("Refresh Table");
+		btnNewButton_2.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+
+				try {
+					Runtime.getRuntime().exec("cmd.exe /c start " + "restart.bat");
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			
+			}
+			
+		});
+		GridBagConstraints gbc_btnNewButton_2 = new GridBagConstraints();
+		gbc_btnNewButton_2.insets = new Insets(0, 0, 0, 5);
+		gbc_btnNewButton_2.gridx = 2;
+		gbc_btnNewButton_2.gridy = 3;
+		frame.getContentPane().add(btnNewButton_2, gbc_btnNewButton_2);
+		
 		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
 		gbc_btnNewButton_1.gridx = 3;
 		gbc_btnNewButton_1.gridy = 3;
@@ -286,6 +326,111 @@ public class MainMenu {
 			}
 		});
 		mnNewMenu.add(mntmSettings);
+		
+		JMenu mnAdd = new JMenu("Edit");
+		menuBar.add(mnAdd);
+		
+		JMenuItem mntmAddRow = new JMenuItem("Add Row");
+		mnAdd.add(mntmAddRow);
+		
+		JMenu mnNewMenu_1 = new JMenu("Change Sort");
+		mnAdd.add(mnNewMenu_1);
+		
+		JMenuItem mntmIdNumber = new JMenuItem("ID Number");
+		mntmIdNumber.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent arg0) {
+				try {
+					
+					Properties props = new Properties();
+					
+					FileOutputStream out = new FileOutputStream("resources/sortconfig.properties");
+					props.load(sIs);
+					props.setProperty("sort", "idnumber");
+					props.store(out, null);
+					out.close();
+					
+					try {
+						Runtime.getRuntime().exec("cmd.exe /c start " + "restart.bat");
+						
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				
+				} catch (Exception e) {
+					
+				}
+
+			}
+			
+		});
+		
+		mnNewMenu_1.add(mntmIdNumber);
+		
+		JMenuItem mntmDescription = new JMenuItem("Description");
+		mntmDescription.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				
+				try {
+					
+					Properties props = new Properties();
+					
+					FileOutputStream out = new FileOutputStream("resources/sortconfig.properties");
+					props.load(sIs);
+					props.setProperty("sort", "description");
+					props.store(out, null);
+					out.close();
+				
+				} catch (Exception e1) {
+					
+				}
+			}
+		});
+		mnNewMenu_1.add(mntmDescription);
+		
+		JMenuItem mntmLastDate = new JMenuItem("Last Date");
+		mntmLastDate.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				
+				try {
+					
+					Properties props = new Properties();
+					
+					FileOutputStream out = new FileOutputStream("resources/sortconfig.properties");
+					props.load(sIs);
+					props.setProperty("sort", "last_date");
+					props.store(out, null);
+					out.close();
+				
+				} catch (Exception e2) {
+					
+				}
+			}
+		});
+		mnNewMenu_1.add(mntmLastDate);
+		
+		JMenuItem mntmNextDate = new JMenuItem("Next Date");
+		mntmNextDate.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				try {
+					
+					Properties props = new Properties();
+					
+					FileOutputStream out = new FileOutputStream("resources/sortconfig.properties");
+					props.load(sIs);
+					props.setProperty("sort", "idnumber");
+					props.store(out, null);
+					out.close();
+				
+				} catch (Exception e3) {
+					
+				}
+			}
+		});
+		mnNewMenu_1.add(mntmNextDate);
 
 	}
 	
