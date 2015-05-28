@@ -282,6 +282,7 @@ public class MainMenu {
 
 				try {
 					Runtime.getRuntime().exec("cmd.exe /c start " + "restart.bat");
+					System.exit(0);
 					
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -349,16 +350,12 @@ public class MainMenu {
 					props.setProperty("sort", "idnumber");
 					props.store(out, null);
 					out.close();
-					
-					try {
-						Runtime.getRuntime().exec("cmd.exe /c start " + "restart.bat");
-						
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 				
+					Runtime.getRuntime().exec("cmd.exe /c start " + "restart.bat");
+					System.exit(0);
+						
 				} catch (Exception e) {
-					
+					e.printStackTrace();
 				}
 
 			}
