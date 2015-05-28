@@ -33,19 +33,25 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
+import org.postgresql.util.PSQLException;
+
 
 public class MainMenu {
 
 	public JFrame frame;
-	//public TableModel tm;
 	
 	//Database Connection Variables
 	static Connection con = null;
 	static PreparedStatement st = null;
 	static ResultSet rs = null;
-	private JTable table;
-	static ResultSet rst = null;
 	
+	private JTable table;
+	
+	static PreparedStatement st1 = null;
+	static ResultSet rs1 = null;
+	
+	public String t;
+
 	//Log File Setup
 	Logger log = Logger.getLogger("Error Log");
 	FileHandler fh;
@@ -83,6 +89,7 @@ public class MainMenu {
 	 * @throws Exception 
 	 */
 	private void initialize() throws Exception {
+
 		//Initialize driver
 		Class.forName("org.postgresql.Driver");
 		
@@ -99,51 +106,50 @@ public class MainMenu {
 		String url = prop.getProperty("url").toString();
 		
 		//Ask for user input, and verify that it is correct
-		String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);
-		String pass = JOptionPane.showInputDialog(frame, "Input Password", url, JOptionPane.QUESTION_MESSAGE);
+		//String user = JOptionPane.showInputDialog(frame, "Enter Username", url, JOptionPane.QUESTION_MESSAGE);
+		//user.toString();
+		
+		//String pass = JOptionPane.showInputDialog(frame, "Input Password", url, JOptionPane.QUESTION_MESSAGE);
 		
 		/**
 		 * Establishes the Log file
 		 */
-		fh = new FileHandler(current + "ErrorLog.log", true);
+		fh = new FileHandler(current + "./ErrorLog.log", true);
 		log.addHandler(fh);
 		SimpleFormatter form = new SimpleFormatter();
 		fh.setFormatter(form);
 
-		
 		/**
 		 * Writes to the properties of the program
 		 */
-
 		String label = "Test";
-
-		con = DriverManager.getConnection(url, user, pass);
 		
-		if (con !=null) {
-			log.info("Connected");
-			//fh.close();
-			System.out.println("Success");
-			label = ("Connected to " + con.getMetaData().getDatabaseProductName());
-		}
-		else {
-			System.out.println("Failure");
-			label = "Not Connected";
+		try {
+			con = DriverManager.getConnection(url, "jeff", "1234");
+		
+			if (con !=null) {
+				//log.info("Connected");
+				//fh.close();
+				//System.out.println("Success");
+				label = ("Connected to " + con.getMetaData().getDatabaseProductName());
+			}
+
+		} catch (PSQLException e) {
+			JOptionPane.showMessageDialog(null, "Could Not Load Database. Check your network connections and try again.", "DB GUI", 0);
+			log.info("Network Error: No Connection");
 		}
 		
 		st = con.prepareStatement("SELECT * FROM test.inspection_room_inventory ORDER BY idnumber ASC");
 		rs = st.executeQuery();
-		
-		
-		//con.setAutoCommit(false);
-				
+
 		frame = new JFrame();
-		frame.setBounds(100, 100, 600, 400);
+		frame.setBounds(100, 100, 600, 600);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0};
-		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0};
+		gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0};
 		gridBagLayout.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gridBagLayout.rowWeights = new double[]{0.0, 1.0, 1.0, 0.0, Double.MIN_VALUE};
 		frame.getContentPane().setLayout(gridBagLayout);
 		
 		JLabel lblNewLabel = new JLabel(label);
@@ -165,56 +171,63 @@ public class MainMenu {
 		table = new JTable(buildTableModel(rs));
 		scrollPane.setViewportView(table);
 		
-		table.getModel().addTableModelListener(new TableModelListener() {
-			
-		public void tableChanged(TableModelEvent e) {
-			int row = e.getFirstRow();
-			int col = e.getColumn();
-			AbstractTableModel model = (AbstractTableModel)e.getSource();
-			Object data = model.getValueAt(row, col);
-			
-			String s = data.toString();
-			
-			PreparedStatement stat = null;
-			
-			TableModel mdl = (TableModel)table.getModel();
-			//table.removeColumn(table.getColumnModel().getColumn(0));
-			//table.setModel(mdl);
-			//table.setModel(model);
-			//table.setModel(dataModel);
-			//model.fireTableDataChanged();
-			try {
-				con.setAutoCommit(false);
-				stat = con.prepareStatement("UPDATE test.inspection_room_inventory SET idnumber = " + s + ";" + "COMMIT;");
-				//rs = stat.executeQuery();
-			} catch (SQLException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			//((AbstractTableModel) mdl).fireTableDataChanged();
-			
-			//System.out.println(e);
-							
-			}
-		});
+		table.removeColumn(table.getColumnModel().getColumn(4));
+		
+		DefaultTableModel mdl = (DefaultTableModel) table.getModel();
 		
 		JButton btnNewButton = new JButton("Update Table");
 		btnNewButton.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				try {
-					//updateTable();
-				} catch (Exception e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				
+				table.getModel().addTableModelListener(new TableModelListener() {
+					
+					public void tableChanged(TableModelEvent e) {
+
+						PreparedStatement stat = null;
+
+						int i = table.getSelectedRow();
+						int j = table.getSelectedColumn();	
+						
+						String colNam = table.getColumnName(j);
+						System.out.println("Column Name: " + colNam);
+						
+						Object o = table.getModel().getValueAt(i, j);
+						t = o.toString();
+						
+						Object ob = table.getModel().getValueAt(i, 4);
+						String obs = ob.toString();
+						System.out.println(obs);
+						
+						System.out.println("(" + j + "," + i + ")");
+						
+						System.out.println("Current Value: " + t);
+						
+						try {
+							stat = con.prepareStatement("UPDATE test.inspection_room_inventory SET " + colNam + " " + "= " + "'" + t + "'" + " WHERE " + "key = " + "'" + obs + "'" );
+							String a = stat.toString();
+							System.out.println("Statement: " + a);
+							rs = stat.executeQuery();
+							mdl.fireTableDataChanged();
+							
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							//e1.printStackTrace();
+							
+						}
+
+					}
+	
+				});
+	
 			}
+
 		});
+		
 		GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
 		gbc_btnNewButton.insets = new Insets(0, 0, 0, 5);
 		gbc_btnNewButton.gridx = 1;
-		gbc_btnNewButton.gridy = 2;
+		gbc_btnNewButton.gridy = 3;
 		frame.getContentPane().add(btnNewButton, gbc_btnNewButton);
 		
 		JButton btnNewButton_1 = new JButton("Exit");
@@ -225,13 +238,13 @@ public class MainMenu {
 					int n = JOptionPane.showConfirmDialog(null, "Connection to server will now be closed.", "Alert", JOptionPane.OK_CANCEL_OPTION);
 					
 					if (n == JOptionPane.CANCEL_OPTION) {
-						//JOptionPane.getRootFrame().dispose();
+						JOptionPane.getRootFrame().dispose();
 					} 
 					if (n == JOptionPane.OK_OPTION) {
 						rs.close();
 						st.close();
 						con.close();
-						log.info("Connection Closed Successfully");
+						//log.info("Connection Closed Successfully");
 						System.out.println("Connection Closed");
 						frame.dispatchEvent(new WindowEvent(frame, WindowEvent.WINDOW_CLOSING));
 					}
@@ -242,9 +255,10 @@ public class MainMenu {
 				}
 			}
 		});
+		
 		GridBagConstraints gbc_btnNewButton_1 = new GridBagConstraints();
 		gbc_btnNewButton_1.gridx = 3;
-		gbc_btnNewButton_1.gridy = 2;
+		gbc_btnNewButton_1.gridy = 3;
 		frame.getContentPane().add(btnNewButton_1, gbc_btnNewButton_1);
 		
 		JMenuBar menuBar = new JMenuBar();
@@ -252,9 +266,6 @@ public class MainMenu {
 		
 		JMenu mnNewMenu = new JMenu("File");
 		menuBar.add(mnNewMenu);
-		
-		JMenuItem mntmSwitchTables = new JMenuItem("Switch Tables");
-		mnNewMenu.add(mntmSwitchTables);
 		
 		JMenuItem mntmHelp = new JMenuItem("Help");
 		mntmHelp.addMouseListener(new MouseAdapter() {
@@ -275,35 +286,16 @@ public class MainMenu {
 			}
 		});
 		mnNewMenu.add(mntmSettings);
-		
-		
+
 	}
 	
 	/**
-	 * Come back to later; probably irrelevant
-	 */
-	/*public boolean isCellEditable (int row, int col) {
-		return true;
-	}
-	
-	public void setValueAt(Object value, int row, int col) {
-		rowData[row][col] = value;
-		fireTableCellUpdated(row, col);
-	}*/
-	
-	
-	/**
-	 * Attempt at editing the values in the db through the Jtable
+	 * Method for Displaying the JTable and populating it with the Database values
 	 * @param rs
 	 * @return
 	 * @throws Exception
 	 */
 	public static TableModel buildTableModel(ResultSet rs) throws Exception {
-		
-		//TableModel mdl = new TableModel();
-		//Statement stmt = null;
-		
-		//int colInd = 0;
 		
 		// TODO Auto-generated method stub
 		ResultSetMetaData md = rs.getMetaData();
@@ -326,8 +318,6 @@ public class MainMenu {
 			data.add(vector);
 			
 		}	
-		
-		//outputResultSet(rs);
 		
 		return new DefaultTableModel(data, colnam);
 		

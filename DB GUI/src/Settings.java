@@ -20,6 +20,7 @@ import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
 
+@SuppressWarnings("serial")
 public class Settings extends JDialog {
 
 	private final JPanel contentPanel = new JPanel();
@@ -50,8 +51,8 @@ public class Settings extends JDialog {
 		 * Reads from properties file
 		 */		
 		Properties prop = new Properties();
-		Thread ct = Thread.currentThread();
-		ClassLoader contextLoader = ct.getContextClassLoader();
+		//Thread ct = Thread.currentThread();
+		//ClassLoader contextLoader = ct.getContextClassLoader();
 		InputStream is = getClass().getResourceAsStream("/config.properties");
 		try {
 			prop.load(is);
