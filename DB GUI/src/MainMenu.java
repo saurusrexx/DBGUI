@@ -335,7 +335,8 @@ public class MainMenu {
 		mntmIdNumber.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent arg0) {
-			
+				
+				currentPref.put(sortNode, "idnumber");
 
 			}
 			
