@@ -348,6 +348,7 @@ public class MainMenu {
 		mntmDescription.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				currentPref.put(sortNode, "description");
 				
 			
 			}
@@ -358,6 +359,7 @@ public class MainMenu {
 		mntmLastDate.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				currentPref.put(sortNode, "last_date");
 				
 				
 			}
@@ -368,6 +370,7 @@ public class MainMenu {
 		mntmNextDate.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
+				currentPref.put(sortNode, "next_date");
 			
 			}
 		});
